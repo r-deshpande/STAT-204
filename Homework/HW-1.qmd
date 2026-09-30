@@ -1,0 +1,123 @@
+---
+title: "HW-1"
+format: pdf
+---
+
+```{r}
+library(palmerpenguins) 
+```
+# line 7: loading in the library
+
+```{r}
+dim(penguins) 
+str(penguins) # variable types present in the dataset.
+summary(penguins) 
+```
+# line 12: number of rows and columns in the dataset. there are 344 rows and 8 columns.
+# line 13: shows more information about all the variables and their corresponding set of values.
+
+```{r}
+# 1.1: Extract and analyze bill lengths
+bill_lengths <- penguins[["bill_length_mm"]]
+
+mean(bill_lengths, na.rm = TRUE) 
+median(bill_lengths, na.rm = TRUE)
+sd(bill_lengths, na.rm = TRUE)
+min(bill_lengths, na.rm = TRUE)
+max(bill_lengths, na.rm = TRUE)
+```
+# line 21: Assigning the variable to the vector made from the "bill_length_mm" variable
+# lines 23-27: Finding all necessary metrics. "na.rm" makes the calculation ignore missing values in the calculation.
+
+```{r}
+# 1.2: Logical subsetting
+
+long_bills <- bill_lengths[which(bill_lengths > 45)] 
+long_bills
+```
+# Used the which function here because "na.rm" does not work in square brackets and I wanted to drop all missing values from the output.
+
+```{r}
+# 2.1: Island Analysis
+summary(penguins)
+
+dream_bills <- penguins$bill_length_mm[penguins$island == "Dream"] 
+mean(dream_bills, na.rm = TRUE) 
+```
+# line 44: extracts the penguins from Dream island and their bill lengths and saves them to a variable
+# line 45: calculates and returns the mean Dream island penguin bill length. ensured to get rid of missing values
+
+```{r}
+# 2.2: Species Counting
+sum(penguins$species == "Adelie") 
+```
+# Initially tried to simply assign all adelie penguins to a variable using the same framework as 2.1 above but it returned the word "Adelie" 152 times for all 152 Adelie penguins. Then, used the sum function to return a scalar.
+
+```{r}
+# 2.3: Find the heaviest penguin
+summary(penguins)
+heaviest <- which.max(penguins$body_mass_g) 
+penguins$body_mass_g[heaviest]
+penguins$species[heaviest]
+penguins$island[heaviest]
+```
+
+
+```{r}
+# 3.1: Create measurement matrix
+penguins_complete <- penguins[complete.cases(penguins), ] # provided
+
+penguin_measurements <- as.matrix(penguins_complete[, c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g")])
+penguin_measurements
+```
+# Originally tried creating the matrix using just "matrix(penguins_complete) ..." but this doesn't work because it treats each column as one big element. Therefore, I needed to use as.matrix because this is what's able to handle the dataframe properly and return all the elements of each column instead of simply the column name. 
+
+# I also left the space before the comma in the penguin_measurements line blank because each matrix is created in terms of [rows, columns]. I wanted each column to represent the elements in a variable so I left the row area blank and this allows each row to have the element's index.
+
+```{r}
+# 3.2: Apply functions
+apply(penguin_measurements, 2, mean) # Returns the mean of each column
+
+apply(penguin_measurements, 2, which.max)
+# which.max function returns the index of the maximum value per column.
+```
+
+
+```{r}
+# 4.1 Write standardize function
+standardize <- function(x) {
+    x <- x[!is.na(x)] 
+    (x - mean(x)) / sd(x)
+}
+
+bill_length_standardized <- standardize(penguins$bill_length_mm)
+mean(bill_length_standardized)
+sd(bill_length_standardized)
+```
+# explaining function creation: This is a logical vector and will return only the values that are TRUE. In this case, the ! makes the non-NA values TRUE (flips the definition) so it will only return the non-NA values. I saved the vector to a variable so that I can perform operations on the whole vector to return (x - mean) / sd.
+
+```{r}
+# Bonus: Option A
+adelie <- penguins[penguins$species == "Adelie", ]
+chinstrap <- penguins[penguins$species == "Chinstrap", ]
+gentoo <- penguins[penguins$species == "Gentoo", ]
+# created variables storing the different penguin species.
+
+species_summary <- data.frame(
+  species = c("Adelie", "Chinstrap", "Gentoo"), 
+  # concatenated the different species in a column
+  count = c(nrow(adelie), nrow(chinstrap), nrow(gentoo)), 
+  # using nrow returns the number of elements in a row
+  mean_body_mass_g = c(mean(adelie$body_mass_g, na.rm = TRUE), 
+  # calculated the mean of each different species of penguin separately
+  # remembering to ignore missing values using "na.rm"
+                       mean(chinstrap$body_mass_g, na.rm = TRUE),
+                       mean(gentoo$body_mass_g, na.rm = TRUE)),
+  mean_flipper_length_mm = c(mean(adelie$flipper_length_mm, na.rm = TRUE), 
+  # calculated the mean of each species' flipper length
+  # also ignored missing values using "na.rm"
+                             mean(chinstrap$flipper_length_mm, na.rm = TRUE),
+                             mean(gentoo$flipper_length_mm, na.rm = TRUE))
+)
+species_summary
+```
