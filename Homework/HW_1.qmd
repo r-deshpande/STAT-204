@@ -1,0 +1,13 @@
+---
+title: "HW-1"
+format: pdf
+---
+
+```{r}
+library(palmerpenguins) # loading in the library
+```
+
+
+```{r}
+objects()
+```
